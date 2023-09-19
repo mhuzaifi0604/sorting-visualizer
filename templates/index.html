@@ -1,0 +1,230 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Sorting Visualizer</title>
+    <script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.js" integrity="sha512-+tu0+vUXyZX+S51npa//IN6znNTLZsBoy8mXn9WzHxfBqYMy6gOzzfTK0VqZf9O171RY9AJviHDokCnvEq8+1A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript" charset="utf-8">
+        insArr=[]
+        selArr=[]
+        heapArr=[]
+        quickArr=[]
+        radixArr=[]
+        bubArr=[]
+        mergeArr=[]
+        bucketArr=[]
+
+        step=0
+        compare=0
+        step1=0
+        compare1=0
+
+        $(document).ready(function() {
+
+            namespace = '/sort';
+            var socket = io(namespace);
+
+            socket.on('connect', function() {
+                socket.emit('my_event', {data: 'Connected'});
+            });
+
+            socket.on('ins', function(msg, cb) {
+                insArr=msg.data.array
+                step=msg.data.step
+                compare=msg.data.compare
+            });
+            socket.on('sel', function(msg, cb) {
+                selArr=msg.data.array
+                step1=msg.data.step
+                compare1=msg.data.compare
+            });
+            socket.on('quick', function(msg, cb) {
+                quickArr=msg.data.array
+            });
+            socket.on('heap', function(msg, cb) {
+                heapArr=msg.data.array
+                console.log(heapArr)
+            });
+            socket.on('radix', function(msg, cb) {
+                radixArr=msg.data.array
+                console.log(radixArr)
+            });
+            socket.on('bub', function(msg, cb) {
+                bubArr=msg.data.array
+                console.log(bubArr)
+            });
+            socket.on('merge', function(msg, cb) {
+                mergeArr=msg.data.array
+                console.log(mergeArr)
+            });
+            socket.on('buck', function(msg, cb) {
+                bucketArr=msg.data.array
+                console.log(bucketArr)
+            });
+
+            $('form#controls').submit(function(event) {
+                let min=parseInt($('#minim').val())
+                let max=parseInt($('#maxim').val())
+
+                data={
+                    'speed':parseFloat($('#speedo').val()),
+                    'min':min,
+                    'max':max
+                }
+                socket.emit('insertion', {data: data});
+                socket.emit('selection', {data: data});
+                socket.emit('quick', {data: data});
+                socket.emit('heap', {data: data});
+                socket.emit('radix', {data:data});
+                socket.emit('BubbleSort', {data:data});
+                socket.emit('mergesort', {data:data});
+                socket.emit('BucketSort', {data:data});
+                return false;
+            });
+        });
+
+        const width = 1380, height = 505
+        function setup(){
+            createCanvas(width, height).parent("#main")
+            insBuffer=createGraphics(240, 250)
+            selBuffer=createGraphics(240, 250)
+            quickBuffer=createGraphics(240, 250)
+            heapBuffer=createGraphics(240, 250)
+            radBuffer=createGraphics(240, 250)
+            bubbleBuffer=createGraphics(240, 250)
+            mergeBuffer=createGraphics(240, 250)
+            bucketBuffer=createGraphics(240, 250)
+            //to be implemented
+            countBuffer=createGraphics(230, 250)
+            
+        }   
+        
+        function draw(){
+            let lineWidth, noOfElements = insArr.length
+            lineWidth = (200 / noOfElements)
+
+            bubbleBuffer.background(248, 237, 227)
+            insBuffer.background(223, 211, 195)
+            selBuffer.background(248, 237, 227)
+            mergeBuffer.background(223, 211, 195)
+            quickBuffer.background(248, 237, 227)
+            heapBuffer.background(223, 211, 195)
+            radBuffer.background(248, 237, 227)
+            bucketBuffer.background(223, 211, 195)
+            //to be implemented
+            countBuffer.background(248, 237, 227)
+            
+            
+            let max=Math.max(...insArr)
+
+            for(let i = 0; i < noOfElements; i++){
+                insBuffer.textSize(15);
+                insBuffer.textStyle(BOLD);
+                insBuffer.text('Insertion Sort', 55, 20).fill(103, 71, 71)
+
+                quickBuffer.textSize(15);
+                quickBuffer.textStyle(BOLD);
+                quickBuffer.text('Quick Sort', 55, 20).fill(103, 71, 71)
+
+                radBuffer.textSize(15);
+                radBuffer.textStyle(BOLD);
+                radBuffer.text('Radix Sort', 55, 20).fill(103, 71, 71)
+
+                heapBuffer.textSize(15);
+                heapBuffer.textStyle(BOLD);
+                heapBuffer.text('Heap Sort', 55, 20).fill(103, 71, 71)
+
+                if (i===step)insBuffer.fill(255, 110, 131)
+                else if(i==compare) insBuffer.fill(125, 110, 131)
+                else insBuffer.fill(125, 110, 255)
+               
+                selBuffer.textSize(15);
+                selBuffer.textStyle(BOLD);
+                selBuffer.text('Selection Sort', 55, 20).fill(103, 71, 71);
+                if (i===step1)selBuffer.fill(255, 110, 131)
+                else if(i==compare1) selBuffer.fill(125, 110, 131)
+                else selBuffer.fill(125, 110, 255)
+
+                radBuffer.fill(125, 110, 131)
+                quickBuffer.fill(125, 110, 131)
+                heapBuffer.fill(125, 110, 131)
+                bubbleBuffer.fill(125, 110, 131)
+                mergeBuffer.fill(125, 110, 131)
+                bucketBuffer.fill(125, 110, 131)
+
+                insBuffer.rect((i*lineWidth),250, lineWidth, -(insArr[i]/max)*200)
+                selBuffer.rect((i*lineWidth),250, lineWidth, -(selArr[i]/max)*200)
+                
+                if(i%2==0) quickBuffer.fill(0, 0, 0)
+                else quickBuffer.fill(0, 128, 128)
+                quickBuffer.rect((i*lineWidth),250, lineWidth, -(quickArr[i]/max)*200)
+
+                if(i%2==0) heapBuffer.fill(255, 87, 51)
+                else heapBuffer.fill(255, 251, 219)
+                heapBuffer.rect((i*lineWidth),250, lineWidth, -(heapArr[i]/max)*200)
+
+                if(i%2==0) radBuffer.fill(119, 197, 147)
+                else radBuffer.fill(237, 53, 114)
+                radBuffer.rect((i*lineWidth), 250, lineWidth, -(radixArr[i]/max)*200)
+                
+
+                bubbleBuffer.textSize(15);
+                bubbleBuffer.textStyle(BOLD);
+                bubbleBuffer.text('Bubble Sort', 55, 20).fill(103, 71, 71)
+
+                if (i%2==0)bubbleBuffer.fill(0, 0, 0)
+                else bubbleBuffer.fill(210, 4, 45)
+
+                bubbleBuffer.rect((i*lineWidth), 250, lineWidth, -(bubArr[i]/max)*200)
+
+                mergeBuffer.textSize(15);
+                mergeBuffer.textStyle(BOLD);
+                mergeBuffer.text('Merge Sort', 55, 20).fill(0, 255, 0);
+
+                if (i%2==0)mergeBuffer.fill(21, 21, 21)
+                else mergeBuffer.fill(255, 255, 0)
+                
+                mergeBuffer.rect((i*lineWidth), 250, lineWidth, -(mergeArr[i]/max)*200)
+                
+                bucketBuffer.textSize(15);
+                bucketBuffer.textStyle(BOLD);
+                bucketBuffer.text('Bucket Sort', 55, 20).fill(103, 71, 71);
+                
+                if (i%2 == 0)bucketBuffer.fill(0, 0, 0)
+                else bucketBuffer.fill(0, 255, 0)
+                bucketBuffer.rect((i*lineWidth), 250, lineWidth, -(bucketArr[i]/max)*200)
+            }
+
+            image(bubbleBuffer, 30, 0)
+            image(insBuffer, 280, 0)
+            image(selBuffer, 530, 0)
+            image(mergeBuffer, 780, 0)
+            image(quickBuffer, 1030, 0)
+            image(heapBuffer, 150, 260)
+            image(radBuffer, 400, 260)
+            image(bucketBuffer, 650, 260)
+            //to be implemented
+            image(countBuffer, 900, 260)
+            
+            
+
+        }
+    </script>
+</head>
+<body style="background-color: #4158D0;
+background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);">
+    <p style="color:darkred; font-size:large; text-align:center; font-weight:bolder; margin-top:0%"> Visualize Sorting Algorithms</p>
+    <div id="main">
+        <form id="controls" method="POST" action='#'>
+            <input type="number" id="minim" placeholder="Minimum" required style="margin-left: 2%; margin-bottom: 1%; border-radius: 2px; font-size:small;">
+            <input type="number" id="maxim" placeholder="Maximum" required style="margin-left: 28%; margin-bottom: 1%; border-radius: 2px; font-size:small;">
+            <input type="text" id="speedo" placeholder="Delay (s)" required style="margin-left: 25%; margin-bottom: 1%; border-radius: 2px; font-size:small;">
+            <input type="submit" value="Visualize" style="display:grid ; margin-left: 46%; margin-bottom: 0.5%; border-color: yellow; color: yellow; background-color: black; font-size: large;">
+            
+            
+              
+        </form>
+    </div>
+</body>
+</html>
